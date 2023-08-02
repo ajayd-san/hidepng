@@ -3,7 +3,9 @@ mod chunk_type;
 mod chunk;
 mod errors;
 mod png;
+mod commands;
 
-fn main() {
-    cli::parse();
+fn main() -> anyhow::Result<()>{
+    cli::parse()?;
+    Ok(())
 }

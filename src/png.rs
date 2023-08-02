@@ -1,10 +1,10 @@
-use std::fmt::Display;
-use anyhow;
 use crate::{
     chunk::Chunk,
     chunk_type,
     errors::{self, Error},
 };
+use anyhow;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Png {
@@ -101,6 +101,11 @@ mod tests {
     use crate::chunk_type::ChunkType;
     use std::convert::TryFrom;
     use std::str::FromStr;
+
+    #[test]
+    fn temp() {
+        let png = Png::try_from(PNG_FILE.as_slice()).unwrap();
+    }
 
     fn testing_chunks() -> Vec<Chunk> {
         let mut chunks = Vec::new();
