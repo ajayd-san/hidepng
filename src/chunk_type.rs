@@ -1,5 +1,5 @@
+use crate::errors::{Error, self};
 use std::{fmt::Display, str::FromStr};
-use crate::errors::Error;
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct ChunkType {
@@ -7,11 +7,11 @@ pub struct ChunkType {
 }
 
 impl ChunkType {
-    fn bytes(&self) -> [u8; 4] {
+    pub fn bytes(&self) -> [u8; 4] {
         self.bytes
     }
 
-    fn is_valid(&self) -> bool {
+    pub fn is_valid(&self) -> bool {
         let within_valid_range = self
             .bytes
             .iter()
@@ -24,27 +24,39 @@ impl ChunkType {
         true && self.is_reserved_bit_valid()
     }
 
-    fn is_critical(&self) -> bool {
+    pub fn is_critical(&self) -> bool {
         self.bytes[0].is_ascii_uppercase()
     }
 
-    fn is_public(&self) -> bool {
+    pub fn is_public(&self) -> bool {
         self.bytes[1].is_ascii_uppercase()
     }
 
-    fn is_reserved_bit_valid(&self) -> bool {
+    pub fn is_reserved_bit_valid(&self) -> bool {
         self.bytes[2].is_ascii_uppercase()
     }
 
-    fn is_safe_to_copy(&self) -> bool {
+    pub fn is_safe_to_copy(&self) -> bool {
         self.bytes[3].is_ascii_lowercase()
     }
 }
 
 impl TryFrom<[u8; 4]> for ChunkType {
-    type Error = String;
+    type Error = errors::Error;
 
     fn try_from(value: [u8; 4]) -> Result<Self, Self::Error> {
+        let within_valid_range = value
+            .iter()
+            .all(|&byte| ((byte >= b'a' && byte <= b'z') || (byte >= b'A' && byte <= b'Z')));
+
+        if !within_valid_range {
+            return Err(Error::InvalidCharacterSet(String::from_utf8(value.to_vec()).unwrap()));
+        }
+
+        if value[2].is_ascii_lowercase() {
+            return Err(Error::InvalidReservebit);
+        }
+
         Ok(ChunkType { bytes: value })
     }
 }
