@@ -20,9 +20,10 @@ pub struct Chunk {
 
 impl Chunk {
     const LENGTH_FIELD_SIZE: u32 = 4;
-    const CHUNK_TYPE_FIELD_SIZE:u32 = 4;
+    const CHUNK_TYPE_FIELD_SIZE: u32 = 4;
     const CRC_FILED_SIZE: u32 = 4;
-    pub const CHUNK_METADATA_SIZE: u32 = Self::LENGTH_FIELD_SIZE + Self::CHUNK_TYPE_FIELD_SIZE + Self::CRC_FILED_SIZE;
+    pub const CHUNK_METADATA_SIZE: u32 =
+        Self::LENGTH_FIELD_SIZE + Self::CHUNK_TYPE_FIELD_SIZE + Self::CRC_FILED_SIZE;
 
     pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
         let crc = Chunk::calculate_crc(&chunk_type, &data);
@@ -82,6 +83,10 @@ impl TryFrom<&[u8]> for Chunk {
     type Error = anyhow::Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        if value.len() < Self::CHUNK_METADATA_SIZE as usize {
+            return Err(errors::Error::InputTooSmall.into());
+        }
+
         let (length_bytes, rest) = value.split_at(4);
         let length = u32::from_be_bytes(length_bytes.try_into()?);
 
@@ -91,7 +96,8 @@ impl TryFrom<&[u8]> for Chunk {
 
         let (data_bytes, crc_bytes) = rest.split_at(length as usize);
         let chunk_data = data_bytes.to_vec();
-        let crc = u32::from_be_bytes(crc_bytes.try_into()?);
+
+        let crc = u32::from_be_bytes(crc_bytes.get(..4).unwrap().try_into()?);
 
         // validate crc
         let calculated_crc = Self::calculate_crc(&chunk_type, &chunk_data);

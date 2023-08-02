@@ -1,11 +1,12 @@
 use std::fmt::Display;
-
+use anyhow;
 use crate::{
     chunk::Chunk,
     chunk_type,
     errors::{self, Error},
 };
 
+#[derive(Debug)]
 pub struct Png {
     chunks: Vec<Chunk>,
 }
