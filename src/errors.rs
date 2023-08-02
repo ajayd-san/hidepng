@@ -24,5 +24,5 @@ pub enum Error {
     InvalidFile(&'static str),
 
     #[error("File Signature does not match standard PNG signature. Possible corruption.")]
-    InvalidPngSignature
+    InvalidPngSignature,
 }
