@@ -1,6 +1,5 @@
 use crate::{
     chunk::Chunk,
-    chunk_type,
     errors::{self, Error},
 };
 use anyhow;
@@ -35,6 +34,11 @@ impl Png {
                 return Ok(chunk);
             }
         }
+    }
+
+    pub fn insert_between(&mut self, chunk: Chunk) {
+        let pos = self.chunks.iter().rposition(|chunk| chunk.chunk_type().to_string() == "IDAT").unwrap_or(1);
+        self.chunks.insert(pos + 1, chunk);
     }
 
     pub fn header(&self) -> &[u8; 8] {
@@ -104,7 +108,7 @@ mod tests {
 
     #[test]
     fn temp() {
-        let png = Png::try_from(PNG_FILE.as_slice()).unwrap();
+        let _png = Png::try_from(PNG_FILE.as_slice()).unwrap();
     }
 
     fn testing_chunks() -> Vec<Chunk> {
@@ -123,8 +127,6 @@ mod tests {
     }
 
     fn chunk_from_strings(chunk_type: &str, data: &str) -> Result<Chunk, errors::Error> {
-        use std::str::FromStr;
-
         let chunk_type = ChunkType::from_str(chunk_type)?;
         let data: Vec<u8> = data.bytes().collect();
 

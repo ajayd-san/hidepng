@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf, str::FromStr};
+use std::{fs, path::PathBuf};
 
 use crate::{chunk::Chunk, chunk_type::ChunkType, errors::Error, png::Png};
 
@@ -13,8 +13,7 @@ pub fn encode(
     let chunk = Chunk::new(chunk_type, msg);
 
     let mut png = Png::try_from(contents.as_slice())?;
-    png.append_chunk(chunk);
-
+    png.insert_between(chunk);
     let output = png.as_bytes();
 
     fs::write(output_file.unwrap_or(file_path), output)?;
@@ -37,10 +36,6 @@ pub fn decode(file_path: PathBuf, chunk_type: ChunkType) -> anyhow::Result<Strin
 pub fn remove(file_path: PathBuf, chunk_type: ChunkType) -> anyhow::Result<()> {
     let contents = fs::read(&file_path)?;
     let mut png = Png::try_from(contents.as_slice())?;
-
-    let chunk = png
-        .chunk_by_type(&chunk_type.to_string())
-        .ok_or(Error::ChunkTypeNotFound(chunk_type.to_string()))?;
 
     png.remove_chunk(&chunk_type.to_string())?;
     let clean_png = png.as_bytes();
