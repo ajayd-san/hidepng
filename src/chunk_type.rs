@@ -65,7 +65,7 @@ impl FromStr for ChunkType {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() > 4 {
+        if s.len() > 4 || s.len() < 4{
             return Err(Error::InvalidSize {
                 r#type: "str",
                 size: s.len(),
@@ -79,7 +79,6 @@ impl FromStr for ChunkType {
         if !within_valid_range {
             return Err(Error::InvalidCharacterSet(s.to_string()));
         }
-
         let bytes = s.as_bytes();
         let bytes = [bytes[0], bytes[1], bytes[2], bytes[3]];
 
@@ -198,6 +197,12 @@ mod tests {
     pub fn test_chunk_type_string() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
         assert_eq!(&chunk.to_string(), "RuSt");
+    }
+
+    #[test]
+    fn test_chunk_type_bytes() {
+        let chunk_type = ChunkType::try_from([84, 69, 120, 84]);
+        assert!(chunk_type.is_err());
     }
 
     #[test]
