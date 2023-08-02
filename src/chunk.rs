@@ -11,7 +11,7 @@ use crate::chunk_type::ChunkType;
 use crate::errors;
 
 #[derive(Debug)]
-struct Chunk {
+pub struct Chunk {
     length: u32,
     chunk_type: ChunkType,
     chunk_data: Vec<u8>,
@@ -19,7 +19,12 @@ struct Chunk {
 }
 
 impl Chunk {
-    fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
+    const LENGTH_FIELD_SIZE: u32 = 4;
+    const CHUNK_TYPE_FIELD_SIZE:u32 = 4;
+    const CRC_FILED_SIZE: u32 = 4;
+    pub const CHUNK_METADATA_SIZE: u32 = Self::LENGTH_FIELD_SIZE + Self::CHUNK_TYPE_FIELD_SIZE + Self::CRC_FILED_SIZE;
+
+    pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Self {
         let crc = Chunk::calculate_crc(&chunk_type, &data);
 
         Chunk {
@@ -30,7 +35,7 @@ impl Chunk {
         }
     }
 
-    fn calculate_crc(chunk_type: &ChunkType, chunk_data: &Vec<u8>) -> u32 {
+    pub fn calculate_crc(chunk_type: &ChunkType, chunk_data: &Vec<u8>) -> u32 {
         let crc_input: Vec<u8> = chunk_type
             .bytes()
             .iter()
@@ -41,28 +46,28 @@ impl Chunk {
         crc32fast::hash(&crc_input)
     }
 
-    fn crc(&self) -> u32 {
+    pub fn crc(&self) -> u32 {
         self.crc
     }
 
-    fn length(&self) -> u32 {
+    pub fn length(&self) -> u32 {
         self.length
     }
 
-    fn chunk_type(&self) -> &ChunkType {
+    pub fn chunk_type(&self) -> &ChunkType {
         &self.chunk_type
     }
 
-    fn data(&self) -> &[u8] {
+    pub fn data(&self) -> &[u8] {
         &self.chunk_data
     }
 
-    fn data_as_string(&self) -> Result<String, FromUtf8Error> {
+    pub fn data_as_string(&self) -> Result<String, FromUtf8Error> {
         let res_string = String::from_utf8(self.chunk_data.clone())?;
         Ok(res_string)
     }
 
-    fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Vec<u8> {
         self.length()
             .to_be_bytes()
             .into_iter()
@@ -74,7 +79,7 @@ impl Chunk {
 }
 
 impl TryFrom<&[u8]> for Chunk {
-    type Error = Box<dyn error::Error>;
+    type Error = anyhow::Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         let (length_bytes, rest) = value.split_at(4);
@@ -92,7 +97,7 @@ impl TryFrom<&[u8]> for Chunk {
         let calculated_crc = Self::calculate_crc(&chunk_type, &chunk_data);
 
         if crc != calculated_crc {
-            return Err(Box::from(errors::Error::CrcMismatch));
+            return Err(errors::Error::CrcMismatch.into());
         }
 
         Ok(Chunk {

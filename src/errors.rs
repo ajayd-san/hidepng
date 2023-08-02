@@ -12,7 +12,14 @@ pub enum Error {
     InvalidReservebit,
 
     #[error("CRC check failed, possible corruption.")]
-    CrcMismatch
+    CrcMismatch,
 
+    #[error("Chunk Type: {0} does not exist.")]
+    ChunkTypeNotFound(String),
 
+    #[error("{0}")]
+    InvalidFile(&'static str),
+
+    #[error("File Signature does not match standard PNG signature. Possible corruption.")]
+    InvalidPngSignature
 }
