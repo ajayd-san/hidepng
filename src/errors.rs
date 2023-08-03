@@ -8,16 +8,16 @@ pub enum Error {
     #[error("Input too small.")]
     InputTooSmall,
 
-    #[error("Chunk type {0} not within valid ASCII set.")]
+    #[error("Chunk type `{0}` not within valid ASCII set.")]
     InvalidCharacterSet(String),
 
-    #[error("Reserve bit should be 0.")]
-    InvalidReservebit,
+    #[error("Reserve bit in chunk type `{0}` should be 0.")]
+    InvalidReservebit(String),
 
     #[error("CRC check failed, possible corruption.")]
     CrcMismatch,
 
-    #[error("Chunk Type: {0} does not exist.")]
+    #[error("Chunk Type `{0}` does not exist.")]
     ChunkTypeNotFound(String),
 
     #[error("{0}")]

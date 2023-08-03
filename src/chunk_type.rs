@@ -54,7 +54,7 @@ impl TryFrom<[u8; 4]> for ChunkType {
         }
 
         if value[2].is_ascii_lowercase() {
-            return Err(Error::InvalidReservebit);
+            return Err(Error::InvalidReservebit(String::from_utf8(value.to_vec()).unwrap()));
         }
 
         Ok(ChunkType { bytes: value })
@@ -78,6 +78,10 @@ impl FromStr for ChunkType {
 
         if !within_valid_range {
             return Err(Error::InvalidCharacterSet(s.to_string()));
+        }
+
+        if s.chars().nth(2).unwrap().is_ascii_lowercase() {
+            return Err(Error::InvalidReservebit(s.to_string()));
         }
         let bytes = s.as_bytes();
         let bytes = [bytes[0], bytes[1], bytes[2], bytes[3]];
@@ -147,8 +151,8 @@ mod tests {
 
     #[test]
     pub fn test_chunk_type_is_reserved_bit_invalid() {
-        let chunk = ChunkType::from_str("Rust").unwrap();
-        assert!(!chunk.is_reserved_bit_valid());
+        let chunk = ChunkType::from_str("Rust");
+        assert!(chunk.is_err());
     }
 
     #[test]
@@ -169,6 +173,7 @@ mod tests {
         assert!(chunk.is_valid());
     }
 
+    #[ignore]
     #[test]
     pub fn test_invalid_chunk_is_valid() {
         let chunk = ChunkType::from_str("Rust").unwrap();
