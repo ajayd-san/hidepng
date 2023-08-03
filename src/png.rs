@@ -37,7 +37,11 @@ impl Png {
     }
 
     pub fn insert_between(&mut self, chunk: Chunk) {
-        let pos = self.chunks.iter().rposition(|chunk| chunk.chunk_type().to_string() == "IDAT").unwrap_or(1);
+        let pos = self
+            .chunks
+            .iter()
+            .rposition(|chunk| chunk.chunk_type().to_string() == "IDAT")
+            .unwrap_or(1);
         self.chunks.insert(pos + 1, chunk);
     }
 

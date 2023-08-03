@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use anyhow::anyhow;
 use clap::{Parser, Subcommand};
 
 use crate::{chunk_type::ChunkType, commands};
