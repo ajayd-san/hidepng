@@ -20,15 +20,19 @@ pub fn encode(
     Ok(())
 }
 
-pub fn decode(file_path: PathBuf, chunk_type: ChunkType) -> anyhow::Result<String> {
+pub fn decode(file_path: PathBuf, chunk_type: ChunkType) -> anyhow::Result<Vec<String>> {
     let contents = fs::read(file_path)?;
     let png = Png::try_from(contents.as_slice())?;
 
-    let chunk = png
+    let chunks = png
         .chunk_by_type(&chunk_type.to_string())
         .ok_or(Error::ChunkTypeNotFound(chunk_type.to_string()))?;
 
-    let data = chunk.data_as_string()?;
+    let data: Vec<String> = chunks
+        .iter()
+        .map(|chunk| Ok(chunk.data_as_string()?))
+        .map(|chunk: anyhow::Result<String>| chunk.unwrap())
+        .collect();
 
     Ok(data)
 }

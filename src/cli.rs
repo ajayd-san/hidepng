@@ -56,7 +56,9 @@ pub fn parse() -> anyhow::Result<()> {
             chunk_type,
         } => {
             let data = commands::decode(file_path, chunk_type)?;
-            println!("{}", data);
+            for msg in data {
+                println!("{}", msg);
+            }
         }
         Commands::Remove {
             file_path,

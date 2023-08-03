@@ -1,8 +1,5 @@
-
-use assert_cmd::{
-    self,
-    Command,
-};
+use assert_cmd::{self, Command};
+use predicates::prelude::PredicateBooleanExt;
 use tempfile::NamedTempFile;
 
 fn create_command(args: &[&str]) -> assert_cmd::assert::Assert {
@@ -99,4 +96,43 @@ fn test_encode_remove_default_chunk_type() {
     let args = ["remove", "-f", output_file];
     let output = create_command(&args);
     output.success();
+}
+
+#[test]
+fn test_encode_decode_mutiple_chunk_default_chunk_type() {
+    let output_file = NamedTempFile::new().unwrap();
+    let output_file = output_file.path().to_str().unwrap();
+
+    let args = [
+        "encode",
+        "-f",
+        "./assets/catgurl.png",
+        "-m",
+        "secret message 1",
+        "-o",
+        output_file,
+    ];
+    let output = create_command(&args);
+    output.success();
+
+    let args = [
+        "encode",
+        "-f",
+        output_file,
+        "-m",
+        "secret message 2",
+        "-o",
+        output_file,
+    ];
+
+    let output = create_command(&args);
+    output.success();
+
+    let args = ["decode", "-f", output_file];
+    let output = create_command(&args);
+
+    output.success().stdout(
+        predicates::str::contains("secret message 2")
+            .and(predicates::str::contains("secret message 1")),
+    );
 }

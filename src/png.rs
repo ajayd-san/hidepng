@@ -53,10 +53,18 @@ impl Png {
         &self.chunks
     }
 
-    pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
-        self.chunks
+    pub fn chunk_by_type(&self, chunk_type: &str) -> Option<Vec<&Chunk>> {
+        let chunks: Vec<&Chunk> = self
+            .chunks
             .iter()
-            .find(|chunk| chunk.chunk_type().bytes() == chunk_type.as_bytes())
+            .filter(|chunk| chunk.chunk_type().bytes() == chunk_type.as_bytes())
+            .collect();
+
+        if chunks.is_empty() {
+            return None;
+        }
+
+        Some(chunks)
     }
 
     pub fn as_bytes(&self) -> Vec<u8> {
@@ -214,6 +222,7 @@ mod tests {
     fn test_chunk_by_type() {
         let png = testing_png();
         let chunk = png.chunk_by_type("FrSt").unwrap();
+        let chunk = chunk[0];
         assert_eq!(&chunk.chunk_type().to_string(), "FrSt");
         assert_eq!(&chunk.data_as_string().unwrap(), "I am the first chunk");
     }
@@ -223,6 +232,7 @@ mod tests {
         let mut png = testing_png();
         png.append_chunk(chunk_from_strings("TeSt", "Message").unwrap());
         let chunk = png.chunk_by_type("TeSt").unwrap();
+        let chunk = chunk[0];
         assert_eq!(&chunk.chunk_type().to_string(), "TeSt");
         assert_eq!(&chunk.data_as_string().unwrap(), "Message");
     }
