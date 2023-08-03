@@ -5,6 +5,8 @@ use clap::{Parser, Subcommand};
 
 use crate::{chunk_type::ChunkType, commands};
 
+use std::str::FromStr;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Cli {
@@ -17,7 +19,7 @@ enum Commands {
     Encode {
         #[arg(short, long, help = "Input file path.")]
         file_path: PathBuf,
-        #[arg(short, long, help = "Key to store message as.")]
+        #[arg(short, long, default_value_t = ChunkType::from_str("STXT").unwrap(),  help = "Key to store message as.")]
         chunk_type: ChunkType,
         #[arg(short, long, help = "Message to be stored.")]
         msg: String,
@@ -28,14 +30,14 @@ enum Commands {
     Decode {
         #[arg(short, long, help = "Input file path.")]
         file_path: PathBuf,
-        #[arg(short, long, help = "Key to store message as.")]
+        #[arg(short, long, default_value_t = ChunkType::from_str("STXT").unwrap(), help = "Key to store message as.")]
         chunk_type: ChunkType,
     },
 
     Remove {
         #[arg(short, long, help = "Input file path.")]
         file_path: PathBuf,
-        #[arg(short, long, help = "Key to store message as.")]
+        #[arg(short, long, default_value_t = ChunkType::from_str("STXT").unwrap(), help = "Key to store message as.")]
         chunk_type: ChunkType,
     },
 }
@@ -56,7 +58,7 @@ pub fn parse() -> anyhow::Result<()> {
         } => {
             let data = commands::decode(file_path, chunk_type)?;
             println!("{}", data);
-        },
+        }
         Commands::Remove {
             file_path,
             chunk_type,
